@@ -16,7 +16,6 @@
       color-scheme: dark;
     }
     html, body { color-scheme: dark; }
-
     *{ box-sizing:border-box; }
 
     body{
@@ -77,7 +76,6 @@
 
     .content{ padding:18px 22px 22px; }
 
-    .row{ display:flex; gap:12px; flex-wrap:wrap; }
     label{ display:block; font-size:13px; color: var(--muted); margin: 10px 0 6px; }
 
     input[type="text"], textarea, select{
@@ -93,7 +91,7 @@
     }
     textarea{ min-height: 96px; resize: vertical; }
 
-    /* Safari dropdown readability (fallback if you still use <select>) */
+    /* Safari dropdown readability */
     select{
       background-color: rgba(255,255,255,.08) !important;
       color: #f5f5ff !important;
@@ -102,7 +100,6 @@
       background-color:#151525 !important;
       color:#f5f5ff !important;
     }
-
     input:focus, textarea:focus, select:focus{
       outline: 2px solid rgba(255,77,141,.55);
       outline-offset: 2px;
@@ -153,7 +150,7 @@
     .small{ font-size:12px; color: var(--muted); margin-top:8px; }
     .hidden{ display:none; }
 
-    /* Choice cards (Safari-proof) */
+    /* Choice cards */
     .choices{ display:grid; gap:10px; margin-top:10px; }
     .choice{
       display:flex;
@@ -217,26 +214,8 @@
       color: rgba(255,255,255,.45);
       font-size:12px;
     }
-    .statusPill{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-      padding:8px 10px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.75);
-      font-size:12px;
-      margin-top:10px;
-    }
-    .dot{
-      width:8px; height:8px; border-radius:50%;
-      background: rgba(255,255,255,.35);
-    }
-    .dot.ok{ background: rgba(0,255,128,.75); }
-    .dot.warn{ background: rgba(255,196,0,.85); }
 
-    /* Top-right fixed restart */
+    /* restart fixed */
     .restartFixed{
       position: fixed;
       top: 14px;
@@ -272,21 +251,77 @@
       60%  { opacity: .9; }
       100% { opacity: 0; transform: translate3d(var(--dx), var(--dy), 0) scale(1.4); }
     }
-    .sparkleFadeOut{
-      animation: layerFade 700ms ease forwards;
+    .sparkleFadeOut{ animation: layerFade 700ms ease forwards; }
+    @keyframes layerFade{ from { opacity: 1; } to { opacity: 0; } }
+
+    /* Sent overlay */
+    .sentOverlay{
+      position: fixed;
+      inset: 0;
+      z-index: 2000;
+      display: grid;
+      place-items: center;
+      background: rgba(0,0,0,.45);
+      backdrop-filter: blur(6px);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .35s ease;
     }
-    @keyframes layerFade{
-      from { opacity: 1; }
-      to   { opacity: 0; }
+    .sentOverlay.show{
+      opacity: 1;
+      pointer-events: all;
+    }
+    .sentCard{
+      width: min(520px, calc(100% - 32px));
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.14);
+      background:
+        radial-gradient(600px 240px at 20% 20%, rgba(255,77,141,.25), transparent 60%),
+        radial-gradient(600px 240px at 80% 10%, rgba(124,92,255,.20), transparent 60%),
+        rgba(21,21,37,.92);
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      padding: 18px 16px;
+      text-align: center;
+      transform: translateY(10px) scale(.98);
+      animation: popIn .55s ease forwards;
+    }
+    @keyframes popIn{
+      to { transform: translateY(0) scale(1); }
+    }
+    .sentBig{
+      font-size: 22px;
+      font-weight: 850;
+      margin: 2px 0 8px;
+    }
+    .sentSmall{
+      color: rgba(255,255,255,.78);
+      margin: 0;
+      line-height: 1.5;
+    }
+    .hearts{
+      margin-top: 12px;
+      font-size: 20px;
+      opacity: .95;
+      animation: floatHearts 1.2s ease-in-out infinite;
+    }
+    @keyframes floatHearts{
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
     }
   </style>
 </head>
 
 <body>
-  <!-- Sparkles -->
   <div id="sparkleLayer" aria-hidden="true"></div>
 
-  <!-- Always-visible restart -->
+  <div class="sentOverlay" id="sentOverlay" aria-hidden="true">
+    <div class="sentCard">
+      <div class="sentBig">Your answer was sent ❤️</div>
+      <p class="sentSmall">Saved successfully. You can restart anytime if you want to do it again ✨</p>
+      <div class="hearts">💗 💞 💗 💞 💗</div>
+    </div>
+  </div>
+
   <div class="restartFixed">
     <button class="ghost" id="restartGlobalBtn">Restart ↻</button>
   </div>
@@ -301,7 +336,7 @@
       <div class="hero">
         <h1 id="title">Hi my love 💌</h1>
         <p id="subtitle">Answer a few questions and unlock a surprise at the end.</p>
-        <div style="margin-top:14px" class="progress" aria-label="Progress">
+        <div style="margin-top:14px" class="progress">
           <div class="bar" id="bar"></div>
         </div>
         <div class="small" id="stepText">Step 1 of 6</div>
@@ -310,27 +345,15 @@
       <div class="content">
         <!-- Step 1 -->
         <section class="step" data-step="1">
-          <div class="row">
-            <div style="flex:1 1 240px">
-              <label>Your name</label>
-              <input id="herName" type="text" placeholder="Type your name" />
-            </div>
-            <div style="flex:1 1 240px">
-              <label>Today’s vibe</label>
-              <select id="vibe">
-                <option value="">Pick one</option>
-                <option>Soft & cozy</option>
-                <option>Chaotic cute</option>
-                <option>Romantic mood</option>
-                <option>Laughing all day</option>
-                <option>Missing you</option>
-              </select>
-            </div>
-          </div>
+          <label>Your name</label>
+          <input id="herName" type="text" placeholder="Type your name" />
+
+          <label>Today’s vibe</label>
+          <input id="vibe" type="text" placeholder="e.g., happy / cozy / missing you" />
 
           <div class="q">
             <div class="qtitle">Quick promise 🤝</div>
-            <p class="qsub">Answer honestly (and cutely). No wrong answers.</p>
+            <p class="qsub">Tap to confirm.</p>
             <label style="margin-top:8px">
               <input id="promise" type="checkbox" style="accent-color: var(--accent);" />
               I promise 😌
@@ -342,14 +365,12 @@
         <section class="step hidden" data-step="2">
           <div class="q">
             <div class="qtitle">1) Pick our cutest memory</div>
-            <p class="qsub">Choose one (you can tell me the full story later 😭)</p>
-
+            <p class="qsub">Choose one</p>
             <div class="choices">
               <label class="choice"><input type="radio" name="memory" value="Our first proper date"> Our first proper date</label>
               <label class="choice"><input type="radio" name="memory" value="That time we laughed non-stop"> That time we laughed non-stop</label>
               <label class="choice"><input type="radio" name="memory" value="A simple moment that felt perfect"> A simple moment that felt perfect</label>
               <label class="choice"><input type="radio" name="memory" value="A surprise / unexpected moment"> A surprise / unexpected moment</label>
-              <label class="choice"><input type="radio" name="memory" value="Other (I’ll tell you later)"> Other (I’ll tell you later)</label>
             </div>
           </div>
         </section>
@@ -357,20 +378,15 @@
         <!-- Step 3 -->
         <section class="step hidden" data-step="3">
           <div class="q">
-            <div class="qtitle">2) When you think of me, what’s the first word?</div>
-            <p class="qsub">Pick one 😌</p>
-
-            <select id="q2">
-              <option value="">Pick one</option>
-              <option>Home</option>
-              <option>Peace</option>
-              <option>Comfort</option>
-              <option>Funny</option>
-              <option>Safe</option>
-              <option>Love</option>
-              <option>Best</option>
-              <option>Crazy (in a good way)</option>
-            </select>
+            <div class="qtitle">2) First word when you think of me?</div>
+            <p class="qsub">Choose one</p>
+            <div class="choices">
+              <label class="choice"><input type="radio" name="word" value="Home"> Home</label>
+              <label class="choice"><input type="radio" name="word" value="Peace"> Peace</label>
+              <label class="choice"><input type="radio" name="word" value="Comfort"> Comfort</label>
+              <label class="choice"><input type="radio" name="word" value="Funny"> Funny</label>
+              <label class="choice"><input type="radio" name="word" value="Love"> Love</label>
+            </div>
           </div>
         </section>
 
@@ -378,13 +394,11 @@
         <section class="step hidden" data-step="4">
           <div class="q">
             <div class="qtitle">3) Choose our next date idea</div>
-            <p class="qsub">Pick one — we’ll do it soon.</p>
-
+            <p class="qsub">Pick one</p>
             <div class="choices">
               <label class="choice"><input type="radio" name="dateIdea" value="Food + long talk"> Food + long talk</label>
               <label class="choice"><input type="radio" name="dateIdea" value="Movie night + snacks"> Movie night + snacks</label>
               <label class="choice"><input type="radio" name="dateIdea" value="Picnic / sunset"> Picnic / sunset</label>
-              <label class="choice"><input type="radio" name="dateIdea" value="Game night (I’ll lose on purpose)"> Game night (I’ll lose on purpose)</label>
               <label class="choice"><input type="radio" name="dateIdea" value="Surprise date (you choose everything)"> Surprise date (you choose everything)</label>
             </div>
           </div>
@@ -393,28 +407,25 @@
         <!-- Step 5 -->
         <section class="step hidden" data-step="5">
           <div class="q">
-            <div class="qtitle">4) One thing you want more of from me</div>
-            <p class="qsub">Choose as many as you want.</p>
-
+            <div class="qtitle">4) What you want more of from me</div>
+            <p class="qsub">Choose at least one</p>
             <div class="choices">
               <label class="choice"><input type="checkbox" name="moreOf" value="More time together"> More time together</label>
               <label class="choice"><input type="checkbox" name="moreOf" value="More communication"> More communication</label>
               <label class="choice"><input type="checkbox" name="moreOf" value="More reassurance"> More reassurance</label>
-              <label class="choice"><input type="checkbox" name="moreOf" value="More surprise dates"> More surprise dates</label>
               <label class="choice"><input type="checkbox" name="moreOf" value="More hugs / affection"> More hugs / affection</label>
-              <label class="choice"><input type="checkbox" name="moreOf" value="More jokes (don’t judge me)"> More jokes (don’t judge me)</label>
+              <label class="choice"><input type="checkbox" name="moreOf" value="More surprise dates"> More surprise dates</label>
             </div>
           </div>
 
           <div class="q">
-            <div class="qtitle">Bonus: Pick a “kiss level” 😳</div>
-            <p class="qsub">This is important research.</p>
-
+            <div class="qtitle">Kiss level 😳</div>
+            <p class="qsub">Choose one</p>
             <div class="choices">
-              <label class="choice"><input type="radio" name="kiss" value="1" /> 1 — shy</label>
-              <label class="choice"><input type="radio" name="kiss" value="2" /> 2 — cute</label>
-              <label class="choice"><input type="radio" name="kiss" value="3" /> 3 — dangerous</label>
-              <label class="choice"><input type="radio" name="kiss" value="4" /> 4 — criminal</label>
+              <label class="choice"><input type="radio" name="kiss" value="1"> 1 — shy</label>
+              <label class="choice"><input type="radio" name="kiss" value="2"> 2 — cute</label>
+              <label class="choice"><input type="radio" name="kiss" value="3"> 3 — dangerous</label>
+              <label class="choice"><input type="radio" name="kiss" value="4"> 4 — criminal</label>
             </div>
           </div>
         </section>
@@ -424,14 +435,7 @@
           <div class="final">
             <div class="loveTitle" id="loveTitle">Unlocked ✨</div>
             <p class="loveMsg" id="loveMsg"></p>
-
-            <div class="statusPill" id="submitStatus">
-              <span class="dot warn" id="submitDot"></span>
-              <span id="submitText">Sending your answers…</span>
-            </div>
-
             <div class="copybox" id="summary"></div>
-
             <div class="actions">
               <button class="primary" id="copyBtn">Copy summary</button>
               <button class="secondary" id="restartBtnFinal">Restart</button>
@@ -445,55 +449,41 @@
         </div>
 
         <div class="footer">
-          <div>Tip: Works on Safari (iPhone) + Chrome.</div>
+          <div>Safari-ready UI ✅</div>
           <div id="hint"></div>
         </div>
       </div>
     </div>
   </div>
 
+  <iframe name="gform_iframe" style="display:none;"></iframe>
+
 <script>
   /***************
-   * CONFIG YOU MUST SET FOR GOOGLE FORMS
+   * GOOGLE FORM CONNECTION (NEW FORM you just created)
    ***************/
-  // 1) Replace with your Google Form formResponse URL:
-  // Example: https://docs.google.com/forms/d/e/FORM_ID/formResponse
-  const FORM_RESPONSE_URL = "https://docs.google.com/forms/d/e/1FAIpQLSfV5TPpSQIbB4fOGfiYLrH4rSC2wThjxDuYz8RoAo6zx8A6Gg/formResponse";
+  const FORM_RESPONSE_URL =
+    "https://docs.google.com/forms/d/e/1FAIpQLScjpglvS4uEXaaOytWltDe2B6LK8YeSEqW7WIQ0uGAELX7RYg/formResponse";
 
-  // 2) Add these questions to your Google Form and paste each entry id:
-  //    - Attempt ID (short answer)
-  //    - Attempt Number (short answer)
-  //    - Attempt Status (short answer) => "completed" or "abandoned"
-  //    - Started At (short answer)
-  //    - Submitted At (short answer)
-  //
-  // Then paste the entry.xxxxx for each.
   const ENTRY = {
-    attemptId:     "entry.1111111111",
-    attemptNumber: "entry.2222222222",
-    status:        "entry.3333333333",
-    startedAt:     "entry.4444444444",
-    submittedAt:   "entry.5555555555",
+    attemptId:     "entry.227473240",
+    attemptNumber: "entry.770562452",
+    status:        "entry.501665858",
+    startedAt:     "entry.1140751729",
+    submittedAt:   "entry.806646288",
 
-    herName:       "entry.6666666666",
-    vibe:          "entry.7777777777",
-    promise:       "entry.8888888888",
-
-    memory:        "entry.9999999999",
-    firstWord:     "entry.1010101010",
-    dateIdea:      "entry.1111111112",
-    moreOf:        "entry.1313131313",
-    kiss:          "entry.1414141414"
+    herName:       "entry.117109998",
+    vibe:          "entry.1184738343",
+    promise:       "entry.1109897456",
+    memory:        "entry.383480975",
+    firstWord:     "entry.1849547503",
+    dateIdea:      "entry.2129156152",
+    moreOf:        "entry.1413831227",
+    kiss:          "entry.342265240"
   };
 
   /***************
-   * PERSONALIZE
-   ***************/
-  const YOUR_NAME = "Shenal";
-  const HER_NICKNAME = "my love";
-
-  /***************
-   * APP STATE
+   * STATE
    ***************/
   const steps = Array.from(document.querySelectorAll(".step"));
   const bar = document.getElementById("bar");
@@ -505,67 +495,45 @@
 
   const backBtn = document.getElementById("backBtn");
   const nextBtn = document.getElementById("nextBtn");
-
   const restartGlobalBtn = document.getElementById("restartGlobalBtn");
   const restartBtnFinal = document.getElementById("restartBtnFinal");
 
   const herName = document.getElementById("herName");
   const vibe = document.getElementById("vibe");
   const promise = document.getElementById("promise");
-  const q2 = document.getElementById("q2");
 
   const loveTitle = document.getElementById("loveTitle");
   const loveMsg = document.getElementById("loveMsg");
   const summaryBox = document.getElementById("summary");
-
-  const submitStatus = document.getElementById("submitStatus");
-  const submitDot = document.getElementById("submitDot");
-  const submitText = document.getElementById("submitText");
-
   const copyBtn = document.getElementById("copyBtn");
+  const sentOverlay = document.getElementById("sentOverlay");
 
-  const STORAGE_KEY = "valentine_attempts_v1";
-  const ATTEMPT_NUM_KEY = "valentine_attempt_number_v1";
+  const ATTEMPT_NUM_KEY = "val_attempt_num_v2";
+  const STORAGE_KEY = "val_attempt_history_v2";
 
   let currentStep = 1;
-
-  // Current attempt tracking
   let attemptId = "";
   let attemptNumber = 1;
   let startedAtISO = "";
   let hasSubmittedThisAttempt = false;
 
-  /***************
-   * HELPERS
-   ***************/
-  const $qs = (sel) => document.querySelector(sel);
   const $qsa = (sel) => Array.from(document.querySelectorAll(sel));
 
   function uuid() {
-    // simple uuid-ish
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
       const r = (Math.random() * 16) | 0;
       const v = c === "x" ? r : (r & 0x3) | 0x8;
       return v.toString(16);
     });
   }
-
   function nowISO() { return new Date().toISOString(); }
 
   function getRadioValue(name) {
     const r = document.querySelector(`input[name="${name}"]:checked`);
     return r ? r.value : "";
   }
-  function setRadioValue(name, val) {
-    const r = document.querySelector(`input[name="${name}"][value="${CSS.escape(val)}"]`);
-    if (r) r.checked = true;
-  }
   function getCheckboxValues(name) {
     return $qsa(`input[name="${name}"]:checked`).map(x => x.value);
-  }
-  function setCheckboxValues(name, vals) {
-    const set = new Set(vals || []);
-    $qsa(`input[name="${name}"]`).forEach(cb => cb.checked = set.has(cb.value));
   }
 
   function updateHeader() {
@@ -573,21 +541,20 @@
     bar.style.width = `${percent}%`;
     stepText.textContent = `Step ${currentStep} of ${steps.length}`;
 
-    const nm = (herName.value || HER_NICKNAME).trim();
+    const nm = (herName.value || "my love").trim();
     title.textContent = `Hi ${nm} 💌`;
-
-    const vibeText = vibe.value ? `Today’s vibe: ${vibe.value}.` : "";
-    subtitle.textContent = `Answer a few questions and unlock a surprise at the end. ${vibeText}`.trim();
+    subtitle.textContent = `Answer a few questions and unlock a surprise at the end.`;
 
     const hints = {
       1: "Tick the promise box to continue 😉",
-      2: "Pick a memory… no pressure 🥺",
+      2: "Pick a memory 🥺",
       3: "Pick one word 😌",
-      4: "Choose wisely… it’s a contract 😂",
+      4: "Choose our date idea 😏",
       5: "Pick at least one + kiss level 😳",
-      6: "Love message unlocked 💗"
+      6: "Submitted ✅"
     };
     hint.textContent = hints[currentStep] || "";
+    attemptBadge.textContent = `Attempt: #${attemptNumber}`;
   }
 
   function showStep(n) {
@@ -597,53 +564,40 @@
 
     backBtn.disabled = (n === 1);
     nextBtn.textContent = (n === steps.length) ? "Done" : "Next";
-
     updateHeader();
     validate();
   }
 
   function validate() {
     let ok = true;
-
-    if (currentStep === 1) {
-      ok = promise.checked;
-    } else if (currentStep === 2) {
-      ok = getRadioValue("memory") !== "";
-    } else if (currentStep === 3) {
-      ok = q2.value !== "";
-    } else if (currentStep === 4) {
-      ok = getRadioValue("dateIdea") !== "";
-    } else if (currentStep === 5) {
-      ok = getCheckboxValues("moreOf").length >= 1 && getRadioValue("kiss") !== "";
-    }
-
+    if (currentStep === 1) ok = promise.checked;
+    if (currentStep === 2) ok = getRadioValue("memory") !== "";
+    if (currentStep === 3) ok = getRadioValue("word") !== "";
+    if (currentStep === 4) ok = getRadioValue("dateIdea") !== "";
+    if (currentStep === 5) ok = (getCheckboxValues("moreOf").length >= 1) && (getRadioValue("kiss") !== "");
     nextBtn.disabled = !ok;
     return ok;
   }
 
   function collectData() {
-    // IMPORTANT: unanswered questions return "" or [] to become "null/blank" in Google Forms
     return {
       attemptId,
       attemptNumber,
       startedAt: startedAtISO,
       herName: herName.value.trim(),
-      vibe: vibe.value || "",
+      vibe: vibe.value.trim(),
       promise: promise.checked ? "true" : "false",
-      memory: getRadioValue("memory") || "",
-      firstWord: q2.value || "",
-      dateIdea: getRadioValue("dateIdea") || "",
-      moreOf: getCheckboxValues("moreOf"), // [] becomes blank
-      kiss: getRadioValue("kiss") || ""
+      memory: getRadioValue("memory"),
+      firstWord: getRadioValue("word"),
+      dateIdea: getRadioValue("dateIdea"),
+      moreOf: getCheckboxValues("moreOf"),
+      kiss: getRadioValue("kiss")
     };
   }
 
   function buildSummary(status) {
     const d = collectData();
-    const kissMap = { "1":"shy", "2":"cute", "3":"dangerous", "4":"criminal" };
-
-    return (
-`Attempt #${d.attemptNumber} (${status})
+    return `Attempt #${d.attemptNumber} (${status})
 Attempt ID: ${d.attemptId}
 Started: ${d.startedAt}
 
@@ -651,110 +605,66 @@ Name: ${d.herName || "(blank)"}
 Vibe: ${d.vibe || "(blank)"}
 Promise: ${d.promise}
 
-1) Memory: ${d.memory || "(blank)"}
-2) First word: ${d.firstWord || "(blank)"}
-3) Date idea: ${d.dateIdea || "(blank)"}
-4) More of: ${d.moreOf.length ? d.moreOf.join(", ") : "(blank)"}
-5) Kiss level: ${d.kiss ? `${d.kiss} — ${kissMap[d.kiss]}` : "(blank)"}`
-    );
+Memory: ${d.memory || "(blank)"}
+First word: ${d.firstWord || "(blank)"}
+Date idea: ${d.dateIdea || "(blank)"}
+More of: ${d.moreOf.length ? d.moreOf.join(", ") : "(blank)"}
+Kiss: ${d.kiss || "(blank)"}`;
   }
 
-  function setSubmitUI(state) {
-    // state: "sending" | "sent" | "skipped"
-    submitStatus.style.display = "inline-flex";
-    if (state === "sending") {
-      submitDot.className = "dot warn";
-      submitText.textContent = "Sending your answers…";
-    } else if (state === "sent") {
-      submitDot.className = "dot ok";
-      submitText.textContent = "Saved to my Google Form ✅";
-    } else {
-      submitDot.className = "dot warn";
-      submitText.textContent = "Google Form not configured yet.";
-    }
+  function showSentOverlay() {
+    sentOverlay.classList.add("show");
+    setTimeout(() => sentOverlay.classList.remove("show"), 2200);
   }
 
-  /***************
-   * GOOGLE FORMS SUBMIT
-   ***************/
-  function isGoogleConfigured() {
-    return FORM_RESPONSE_URL.startsWith("https://docs.google.com/forms/") && Object.values(ENTRY).every(v => v.startsWith("entry."));
-  }
-
-  function toUrlEncoded(paramsObj) {
-    const data = new URLSearchParams();
-
-    // Always include attempt metadata and status
-    data.append(ENTRY.attemptId, paramsObj.attemptId || "");
-    data.append(ENTRY.attemptNumber, String(paramsObj.attemptNumber || ""));
-    data.append(ENTRY.status, paramsObj.status || "");
-    data.append(ENTRY.startedAt, paramsObj.startedAt || "");
-    data.append(ENTRY.submittedAt, paramsObj.submittedAt || "");
-
-    // Answers (blank allowed)
-    data.append(ENTRY.herName, paramsObj.herName || "");
-    data.append(ENTRY.vibe, paramsObj.vibe || "");
-    data.append(ENTRY.promise, paramsObj.promise || "");
-
-    data.append(ENTRY.memory, paramsObj.memory || "");
-    data.append(ENTRY.firstWord, paramsObj.firstWord || "");
-    data.append(ENTRY.dateIdea, paramsObj.dateIdea || "");
-    data.append(ENTRY.moreOf, (paramsObj.moreOf && paramsObj.moreOf.length) ? paramsObj.moreOf.join(", ") : "");
-    data.append(ENTRY.kiss, paramsObj.kiss || "");
-
-    return data.toString();
-  }
-
-  function submitAttempt(status, reason) {
-    // Prevent double submit for same attempt
+  function submitAttempt(status) {
     if (hasSubmittedThisAttempt) return;
     hasSubmittedThisAttempt = true;
 
     const d = collectData();
     const submittedAtISO = nowISO();
 
-    const payload = {
-      ...d,
-      status,               // "completed" or "abandoned"
-      submittedAt: submittedAtISO,
-      reason: reason || ""  // not sent unless you add field; just kept locally
-    };
-
-    // Save attempt locally (record every attempt)
-    const raw = localStorage.getItem(STORAGE_KEY);
-    const list = raw ? JSON.parse(raw) : [];
-    list.push(payload);
+    // store locally too
+    const list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    list.push({ ...d, status, submittedAt: submittedAtISO });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
 
-    // If Google Form isn't configured, stop here
-    if (!isGoogleConfigured()) return;
+    // HTML POST (Google accepts always)
+    const form = document.createElement("form");
+    form.method = "POST";
+    form.action = FORM_RESPONSE_URL;
+    form.target = "gform_iframe";
 
-    const body = toUrlEncoded(payload);
+    const add = (name, value) => {
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value ?? "";
+      form.appendChild(input);
+    };
 
-    // Try sendBeacon first (best for unload/close)
-    let beaconOk = false;
-    try {
-      if (navigator.sendBeacon) {
-        const blob = new Blob([body], { type: "application/x-www-form-urlencoded" });
-        beaconOk = navigator.sendBeacon(FORM_RESPONSE_URL, blob);
-      }
-    } catch {}
+    add(ENTRY.attemptId, d.attemptId);
+    add(ENTRY.attemptNumber, String(d.attemptNumber));
+    add(ENTRY.status, status);
+    add(ENTRY.startedAt, d.startedAt);
+    add(ENTRY.submittedAt, submittedAtISO);
 
-    // If not beacon, use fetch no-cors (works for normal submit)
-    if (!beaconOk) {
-      fetch(FORM_RESPONSE_URL, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body,
-        keepalive: true
-      }).catch(() => {});
-    }
+    add(ENTRY.herName, d.herName);
+    add(ENTRY.vibe, d.vibe);
+    add(ENTRY.promise, d.promise);
+    add(ENTRY.memory, d.memory);
+    add(ENTRY.firstWord, d.firstWord);
+    add(ENTRY.dateIdea, d.dateIdea);
+    add(ENTRY.moreOf, (d.moreOf || []).join(", "));
+    add(ENTRY.kiss, d.kiss);
+
+    document.body.appendChild(form);
+    form.submit();
+    form.remove();
+
+    showSentOverlay();
   }
 
-  /***************
-   * ATTEMPT MANAGEMENT
-   ***************/
   function startNewAttempt() {
     attemptNumber = Number(localStorage.getItem(ATTEMPT_NUM_KEY) || "0") + 1;
     localStorage.setItem(ATTEMPT_NUM_KEY, String(attemptNumber));
@@ -763,87 +673,58 @@ Promise: ${d.promise}
     startedAtISO = nowISO();
     hasSubmittedThisAttempt = false;
 
-    attemptBadge.textContent = `Attempt: #${attemptNumber}`;
+    updateHeader();
   }
 
   function resetInputs() {
     herName.value = "";
     vibe.value = "";
     promise.checked = false;
-
     $qsa('input[type="radio"]').forEach(r => r.checked = false);
     $qsa('input[type="checkbox"]').forEach(c => c.checked = false);
-    q2.value = "";
   }
 
   function restartFlow() {
-    // Submit current attempt as abandoned (blanks allowed)
-    submitAttempt("abandoned", "restart");
-    // New attempt
+    submitAttempt("abandoned");
     startNewAttempt();
     resetInputs();
     currentStep = 1;
     showStep(currentStep);
   }
 
-  /***************
-   * FINAL (STEP 6)
-   ***************/
   function showFinalAndSubmit() {
-    const nm = (herName.value || HER_NICKNAME).trim();
-    const word = q2.value || "everything";
+    const nm = (herName.value || "my love").trim();
+    const word = getRadioValue("word") || "everything";
     const date = getRadioValue("dateIdea") || "a date";
 
     loveTitle.textContent = "I choose you 💗";
     loveMsg.textContent =
-      `${nm}, thank you for doing this 🥺. You picked “${word}” for me and I’m genuinely smiling like an idiot. ` +
-      `Our next plan is: ${date}. Just remember — you’re my favorite person, always.`;
+      `${nm}, thank you for doing this 🥺. You picked “${word}” for me and I’m smiling like an idiot. ` +
+      `Our next plan is: ${date}. Just remember — you’re my favorite person. Always.`;
 
-    // Summary for user
     summaryBox.textContent = buildSummary("completed");
-
-    // Submit to Google Form
-    if (isGoogleConfigured()) {
-      setSubmitUI("sending");
-      submitAttempt("completed", "finish");
-      // We can't read response because no-cors, so we show "sent" after a short delay
-      setTimeout(() => setSubmitUI("sent"), 700);
-    } else {
-      setSubmitUI("skipped");
-    }
+    submitAttempt("completed");
   }
 
-  /***************
-   * SPARKLES (5s)
-   ***************/
   function runSparkles(durationMs = 5000) {
     const layer = document.getElementById("sparkleLayer");
-    if (!layer) return;
-
     const start = performance.now();
-    const spawnEveryMs = 90; // density
     let lastSpawn = 0;
 
     function spawnOne() {
       const s = document.createElement("div");
       s.className = "sparkle";
-
       const x = Math.random() * window.innerWidth;
       const y = Math.random() * window.innerHeight;
-
       const dx = (Math.random() * 2 - 1) * 120 + "px";
       const dy = (Math.random() * 2 - 1) * 120 + "px";
-
       s.style.left = x + "px";
       s.style.top = y + "px";
       s.style.setProperty("--dx", dx);
       s.style.setProperty("--dy", dy);
-
-      // Slight size variety
       const size = 4 + Math.random() * 4;
       s.style.width = size + "px";
       s.style.height = size + "px";
-
       layer.appendChild(s);
       setTimeout(() => s.remove(), 1400);
     }
@@ -854,9 +735,8 @@ Promise: ${d.promise}
         setTimeout(() => layer.remove(), 800);
         return;
       }
-      if (t - lastSpawn >= spawnEveryMs) {
+      if (t - lastSpawn >= 90) {
         lastSpawn = t;
-        // burst
         for (let i = 0; i < 3; i++) spawnOne();
       }
       requestAnimationFrame(tick);
@@ -864,11 +744,8 @@ Promise: ${d.promise}
     requestAnimationFrame(tick);
   }
 
-  /***************
-   * EVENTS
-   ***************/
-  document.addEventListener("input", () => validate());
-  document.addEventListener("change", () => validate());
+  document.addEventListener("input", validate);
+  document.addEventListener("change", validate);
 
   backBtn.addEventListener("click", () => {
     if (currentStep > 1) {
@@ -882,11 +759,7 @@ Promise: ${d.promise}
 
     if (currentStep < steps.length) {
       currentStep++;
-
-      if (currentStep === steps.length) {
-        showFinalAndSubmit();
-      }
-
+      if (currentStep === steps.length) showFinalAndSubmit();
       showStep(currentStep);
     }
   });
@@ -900,18 +773,15 @@ Promise: ${d.promise}
       copyBtn.textContent = "Copied ✅";
       setTimeout(() => copyBtn.textContent = "Copy summary", 1200);
     } catch {
-      alert("Copy failed. You can manually select and copy the text.");
+      alert("Copy failed. You can select and copy manually.");
     }
   });
 
-  // If user closes/leaves before finishing, submit abandoned with blanks.
   window.addEventListener("pagehide", () => {
-    if (!hasSubmittedThisAttempt) submitAttempt("abandoned", "pagehide");
+    if (!hasSubmittedThisAttempt) submitAttempt("abandoned");
   });
 
-  /***************
-   * INIT
-   ***************/
+  // INIT
   startNewAttempt();
   showStep(currentStep);
   runSparkles(5000);
