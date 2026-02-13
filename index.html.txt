@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>💌 A Little Valentine For You</title>
+  <style>
+    :root { --bg:#0b0b12; --card:#151525; --text:#f5f5ff; --muted:#b9b9d6; --accent:#ff4d8d; --accent2:#7c5cff; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color: var(--text);
+      background: radial-gradient(900px 500px at 20% 10%, rgba(255,77,141,.25), transparent 60%),
+                  radial-gradient(900px 500px at 80% 20%, rgba(124,92,255,.25), transparent 60%),
+                  linear-gradient(180deg, #07070d, #0b0b12);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .wrap { width: min(820px, 100%); }
+    .top {
+      display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom:16px;
+    }
+    .badge {
+      display:inline-flex; gap:8px; align-items:center;
+      padding:10px 12px; border-radius: 999px;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12);
+      color: var(--muted); font-size: 13px;
+    }
+    .card {
+      background: rgba(21,21,37,.85);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 18px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.35);
+      overflow: hidden;
+    }
+    .hero {
+      padding: 26px 22px 18px;
+      background:
+        radial-gradient(600px 240px at 20% 20%, rgba(255,77,141,.30), transparent 60%),
+        radial-gradient(600px 240px at 80% 10%, rgba(124,92,255,.25), transparent 60%);
+      border-bottom: 1px solid rgba(255,255,255,.10);
+    }
+    h1 { margin:0 0 8px; font-size: clamp(22px, 3.2vw, 34px); }
+    p { margin: 0; color: var(--muted); line-height: 1.5; }
+    .content { padding: 18px 22px 22px; }
+    .row { display:flex; gap:12px; flex-wrap: wrap; }
+    label { display:block; font-size: 13px; color: var(--muted); margin: 10px 0 6px; }
+    input[type="text"], textarea, select {
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      outline: none;
+    }
+    textarea { min-height: 96px; resize: vertical; }
+    .q {
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      margin-top: 14px;
+    }
+    .qtitle { font-weight: 650; margin: 0 0 4px; }
+    .qsub { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+    .actions { display:flex; gap:10px; flex-wrap: wrap; margin-top: 16px; }
+    button {
+      border: 0;
+      padding: 12px 14px;
+      border-radius: 12px;
+      color: white;
+      cursor: pointer;
+      font-weight: 650;
+    }
+    .primary { background: linear-gradient(90deg, var(--accent), #ff7aa9); }
+    .secondary { background: rgba(255,255,255,.10); }
+    .ghost { background: transparent; border: 1px solid rgba(255,255,255,.18); }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .progress {
+      height: 10px;
+      background: rgba(255,255,255,.08);
+      border-radius: 999px;
+      overflow:hidden;
+      border: 1px solid rgba(255,255,255,.10);
+    }
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transition: width .35s ease;
+    }
+    .small { font-size: 12px; color: var(--muted); margin-top: 8px; }
+    .hidden { display:none; }
+    .final {
+      padding: 18px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: radial-gradient(600px 240px at 20% 20%, rgba(255,77,141,.20), transparent 60%),
+                  radial-gradient(600px 240px at 80% 10%, rgba(124,92,255,.18), transparent 60%),
+                  rgba(255,255,255,.03);
+      margin-top: 16px;
+    }
+    .copybox {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.25);
+      border: 1px solid rgba(255,255,255,.10);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
+      font-size: 12px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .footer {
+      margin-top: 14px;
+      display:flex;
+      justify-content: space-between;
+      gap:10px;
+      flex-wrap: wrap;
+      color: rgba(255,255,255,.45);
+      font-size: 12px;
+    }
+    a { color: rgba(255,255,255,.7); }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="badge">💗 Valentine Mini-Site</div>
+      <div class="badge" id="saveStatus">Saved: not yet</div>
+    </div>
+
+    <div class="card">
+      <div class="hero">
+        <h1 id="title">Hi my love 💌</h1>
+        <p id="subtitle">I made you a tiny page with a few questions. Answer them and unlock a little surprise at the end.</p>
+        <div style="margin-top:14px" class="progress" aria-label="Progress">
+          <div class="bar" id="bar"></div>
+        </div>
+        <div class="small" id="stepText">Step 1 of 6</div>
+      </div>
+
+      <div class="content">
+        <!-- Intro -->
+        <section class="step" data-step="1">
+          <div class="row">
+            <div style="flex:1 1 240px">
+              <label>Your name</label>
+              <input id="herName" type="text" placeholder="Type your name" />
+            </div>
+            <div style="flex:1 1 240px">
+              <label>Today’s vibe</label>
+              <select id="vibe">
+                <option value="">Pick one</option>
+                <option>Soft & cozy</option>
+                <option>Chaotic cute</option>
+                <option>Romantic mood</option>
+                <option>Laughing all day</option>
+                <option>Missing you</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="q">
+            <div class="qtitle">Quick promise 🤝</div>
+            <p class="qsub">Answer honestly (and cutely if possible). No wrong answers.</p>
+            <label><input id="promise" type="checkbox" /> I promise 😌</label>
+          </div>
+        </section>
+
+        <!-- Q1 -->
+        <section class="step hidden" data-step="2">
+          <div class="q">
+            <div class="qtitle">1) What’s your favorite memory of us?</div>
+            <p class="qsub">Anything — even something small.</p>
+            <textarea id="q1" placeholder="Type here..."></textarea>
+          </div>
+        </section>
+
+        <!-- Q2 -->
+        <section class="step hidden" data-step="3">
+          <div class="q">
+            <div class="qtitle">2) When you think of me, what’s the first word that comes to mind?</div>
+            <p class="qsub">One word. No thinking too hard 😭</p>
+            <input id="q2" type="text" placeholder="One word..." />
+          </div>
+        </section>
+
+        <!-- Q3 -->
+        <section class="step hidden" data-step="4">
+          <div class="q">
+            <div class="qtitle">3) Choose our next date idea</div>
+            <p class="qsub">Pick one — we’ll do it soon.</p>
+            <select id="q3">
+              <option value="">Pick a date idea</option>
+              <option>Food + long talk</option>
+              <option>Movie night + snacks</option>
+              <option>Picnic / sunset</option>
+              <option>Game night (I’ll lose on purpose)</option>
+              <option>Surprise date (you choose everything)</option>
+            </select>
+          </div>
+        </section>
+
+        <!-- Q4 -->
+        <section class="step hidden" data-step="5">
+          <div class="q">
+            <div class="qtitle">4) One thing you want more of from me</div>
+            <p class="qsub">Be honest — this is your safe space.</p>
+            <textarea id="q4" placeholder="Type here..."></textarea>
+          </div>
+
+          <div class="q">
+            <div class="qtitle">Bonus: Pick a “kiss level” 😳</div>
+            <p class="qsub">This is important research.</p>
+            <label><input name="kiss" type="radio" value="1" /> 1 — shy</label><br/>
+            <label><input name="kiss" type="radio" value="2" /> 2 — cute</label><br/>
+            <label><input name="kiss" type="radio" value="3" /> 3 — dangerous</label><br/>
+            <label><input name="kiss" type="radio" value="4" /> 4 — criminal</label>
+          </div>
+        </section>
+
+        <!-- Final -->
+        <section class="step hidden" data-step="6">
+          <div class="final">
+            <h2 style="margin:0 0 8px">Unlocked ✨</h2>
+            <p id="finalMsg" style="margin:0 0 8px"></p>
+            <p style="margin:0; color: var(--muted);">Copy the summary below and send it back to me 💗</p>
+
+            <div class="copybox" id="summary"></div>
+
+            <div class="actions">
+              <button class="primary" id="copyBtn">Copy summary</button>
+              <button class="secondary" id="restartBtn">Restart</button>
+              <button class="ghost" id="downloadBtn">Download my answers (.txt)</button>
+            </div>
+          </div>
+        </section>
+
+        <div class="actions">
+          <button class="secondary" id="backBtn">Back</button>
+          <button class="primary" id="nextBtn">Next</button>
+          <button class="ghost" id="saveBtn">Save now</button>
+        </div>
+
+        <div class="footer">
+          <div>Tip: Works offline. Just open the file in Safari/Chrome.</div>
+          <div id="hint"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ====== Customize these two lines ======
+  const YOUR_NAME = "Shenal Aiya";          // e.g. "Shenal"
+  const HER_NICKNAME = "my baby G Imaya";         // e.g. "babe", "princess"
+  // ======================================
+
+  const steps = Array.from(document.querySelectorAll(".step"));
+  const bar = document.getElementById("bar");
+  const stepText = document.getElementById("stepText");
+  const title = document.getElementById("title");
+  const subtitle = document.getElementById("subtitle");
+  const hint = document.getElementById("hint");
+  const saveStatus = document.getElementById("saveStatus");
+
+  const backBtn = document.getElementById("backBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const saveBtn = document.getElementById("saveBtn");
+
+  const herName = document.getElementById("herName");
+  const vibe = document.getElementById("vibe");
+  const promise = document.getElementById("promise");
+  const q1 = document.getElementById("q1");
+  const q2 = document.getElementById("q2");
+  const q3 = document.getElementById("q3");
+  const q4 = document.getElementById("q4");
+
+  const finalMsg = document.getElementById("finalMsg");
+  const summaryBox = document.getElementById("summary");
+  const copyBtn = document.getElementById("copyBtn");
+  const restartBtn = document.getElementById("restartBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+
+  const STORAGE_KEY = "valentine_mini_site_v1";
+
+  let current = 1;
+
+  function getKissLevel() {
+    const r = document.querySelector('input[name="kiss"]:checked');
+    return r ? r.value : "";
+  }
+
+  function setKissLevel(val) {
+    const r = document.querySelector(`input[name="kiss"][value="${val}"]`);
+    if (r) r.checked = true;
+  }
+
+  function updateHeader() {
+    const percent = ((current - 1) / (steps.length - 1)) * 100;
+    bar.style.width = `${percent}%`;
+    stepText.textContent = `Step ${current} of ${steps.length}`;
+
+    const name = (herName.value || HER_NICKNAME).trim();
+    title.textContent = `Hi ${name} 💌`;
+
+    const vibeText = vibe.value ? `Today’s vibe: ${vibe.value}.` : "";
+    subtitle.textContent = `I made you a tiny page with a few questions. Answer them and unlock a little surprise at the end. ${vibeText}`.trim();
+
+    // tiny hints
+    const hints = {
+      1: "Tick the promise box to continue 😉",
+      2: "Memory time… be cute pls.",
+      3: "One word only 😭",
+      4: "Pick the date idea carefully.",
+      5: "Honesty = extra kisses.",
+      6: "Send me the summary 💗"
+    };
+    hint.textContent = hints[current] || "";
+  }
+
+  function showStep(n) {
+    steps.forEach(s => s.classList.add("hidden"));
+    const target = steps.find(s => Number(s.dataset.step) === n);
+    if (target) target.classList.remove("hidden");
+
+    backBtn.disabled = (n === 1);
+    nextBtn.textContent = (n === steps.length) ? "Done" : "Next";
+
+    updateHeader();
+    validate();
+  }
+
+  function validate() {
+    let ok = true;
+
+    if (current === 1) {
+      ok = promise.checked;
+    } else if (current === 2) {
+      ok = q1.value.trim().length >= 3;
+    } else if (current === 3) {
+      ok = q2.value.trim().length >= 1 && q2.value.trim().split(/\s+/).length <= 3;
+    } else if (current === 4) {
+      ok = q3.value !== "";
+    } else if (current === 5) {
+      ok = q4.value.trim().length >= 3 && getKissLevel() !== "";
+    }
+
+    nextBtn.disabled = !ok;
+    return ok;
+  }
+
+  function buildSummary() {
+    const data = collectData();
+    const now = new Date();
+    const when = now.toLocaleString();
+
+    const kissMap = { "1":"shy", "2":"cute", "3":"dangerous", "4":"criminal" };
+
+    const summary =
+`💌 Valentine Answers (${when})
+Name: ${data.herName || "(not said)"}
+Vibe: ${data.vibe || "(not picked)"}
+
+1) Favorite memory:
+${data.q1 || "-"}
+
+2) First word for you:
+${data.q2 || "-"}
+
+3) Next date idea:
+${data.q3 || "-"}
+
+4) Wants more of:
+${data.q4 || "-"}
+
+Bonus kiss level:
+${data.kiss ? `${data.kiss} — ${kissMap[data.kiss]}` : "-"}
+
+(Reply this to ${YOUR_NAME} 💗)`;
+
+    return summary;
+  }
+
+  function updateFinal() {
+    const name = (herName.value || HER_NICKNAME).trim();
+    const word = q2.value.trim() || "everything";
+    const date = q3.value || "a date";
+    finalMsg.textContent =
+      `${name}, thank you for answering 🥺💗. Just so you know… I’m choosing you — today and every day. Also, the fact you thought of “${word}” when you thought of me? Yeah… I’m smiling like an idiot. Our next plan is: ${date}.`;
+
+    const summary = buildSummary();
+    summaryBox.textContent = summary;
+  }
+
+  function collectData() {
+    return {
+      herName: herName.value.trim(),
+      vibe: vibe.value,
+      promise: promise.checked,
+      q1: q1.value.trim(),
+      q2: q2.value.trim(),
+      q3: q3.value,
+      q4: q4.value.trim(),
+      kiss: getKissLevel()
+    };
+  }
+
+  function save() {
+    const payload = { current, data: collectData(), savedAt: Date.now() };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+    const d = new Date(payload.savedAt);
+    saveStatus.textContent = `Saved: ${d.toLocaleTimeString()}`;
+  }
+
+  function load() {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+
+    try {
+      const payload = JSON.parse(raw);
+      const d = payload.data || {};
+      current = payload.current || 1;
+
+      herName.value = d.herName || "";
+      vibe.value = d.vibe || "";
+      promise.checked = !!d.promise;
+      q1.value = d.q1 || "";
+      q2.value = d.q2 || "";
+      q3.value = d.q3 || "";
+      q4.value = d.q4 || "";
+      setKissLevel(d.kiss || "");
+
+      if (payload.savedAt) {
+        const t = new Date(payload.savedAt);
+        saveStatus.textContent = `Saved: ${t.toLocaleTimeString()}`;
+      }
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function clearAll() {
+    localStorage.removeItem(STORAGE_KEY);
+    herName.value = "";
+    vibe.value = "";
+    promise.checked = false;
+    q1.value = "";
+    q2.value = "";
+    q3.value = "";
+    q4.value = "";
+    setKissLevel("");
+    current = 1;
+    saveStatus.textContent = "Saved: not yet";
+  }
+
+  // Events
+  document.addEventListener("input", () => { validate(); });
+  document.addEventListener("change", () => { validate(); });
+
+  backBtn.addEventListener("click", () => {
+    if (current > 1) { current--; showStep(current); save(); }
+  });
+
+  nextBtn.addEventListener("click", () => {
+    if (!validate()) return;
+
+    if (current < steps.length) {
+      current++;
+      if (current === steps.length) updateFinal();
+      showStep(current);
+      save();
+    }
+  });
+
+  saveBtn.addEventListener("click", save);
+
+  copyBtn.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(summaryBox.textContent);
+      copyBtn.textContent = "Copied ✅";
+      setTimeout(() => copyBtn.textContent = "Copy summary", 1200);
+    } catch {
+      alert("Copy failed. You can manually select and copy the text.");
+    }
+  });
+
+  restartBtn.addEventListener("click", () => {
+    clearAll();
+    showStep(current);
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    const text = summaryBox.textContent;
+    const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "valentine_answers.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(a.href);
+  });
+
+  // Init
+  load();
+  showStep(current);
+</script>
+</body>
+</html>
